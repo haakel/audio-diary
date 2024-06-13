@@ -31,23 +31,44 @@ if ( ! defined( 'ABSPATH' ) ) {
         $this->define_constants();
 		$this->Audio_diary_loader();
     }
-	public function define_constants() {
-
-		/**
-		 * Defines all constants
-		 *
-		 */
-        define( 'AUDIO_DIARY_VERSION', '1.0.0' );
-		define( 'AUDIO_DIARY_FILE', __FILE__ );
-		define( 'AUDIO_DIARY_PATH', plugin_dir_path( AUDIO_DIARY_FILE ) );
-		define( 'AUDIO_DIARY_BASE', plugin_basename( AUDIO_DIARY_FILE ) );
-		define( 'AUDIO_DIARY_SLUG', 'Audio_diary_settings' );
-		define( 'AUDIO_DIARY_SETTINGS_LINK', admin_url( 'admin.php?page=' . AUDIO_DIARY_SLUG ) );
-		define( 'AUDIO_DIARY_CLASSES_PATH', AUDIO_DIARY_PATH . 'classes/' );
-        define( 'AUDIO_DIARY_IMAGES', AUDIO_DIARY_PATH . 'build/images' );
-		define( 'AUDIO_DIARY_MODULES_PATH', AUDIO_DIARY_PATH . 'modules/' );
-		define( 'AUDIO_DIARY_URL', plugins_url( '/', AUDIO_DIARY_FILE ) );
-	}
+    /**
+     * Define all constants
+     */
+    public function define_constants() {
+        if ( ! defined( 'AUDIO_DIARY_VERSION' ) ) {
+            define( 'AUDIO_DIARY_VERSION', '1.0.0' );
+        }
+        if ( ! defined( 'AUDIO_DIARY_FILE' ) ) {
+            define( 'AUDIO_DIARY_FILE', __FILE__ );
+        }
+        if ( ! defined( 'AUDIO_DIARY_PATH' ) ) {
+            define( 'AUDIO_DIARY_PATH', plugin_dir_path( AUDIO_DIARY_FILE ) );
+        }
+        if ( ! defined( 'AUDIO_DIARY_BASE' ) ) {
+            define( 'AUDIO_DIARY_BASE', plugin_basename( AUDIO_DIARY_FILE ) );
+        }
+        if ( ! defined( 'AUDIO_DIARY_SLUG' ) ) {
+            define( 'AUDIO_DIARY_SLUG', 'audio-diary-settings' );
+        }
+        if ( ! defined( 'AUDIO_DIARY_SETTINGS_LINK' ) ) {
+            define( 'AUDIO_DIARY_SETTINGS_LINK', admin_url( 'admin.php?page=' . AUDIO_DIARY_SLUG ) );
+        }
+        if ( ! defined( 'AUDIO_DIARY_CLASSES_PATH' ) ) {
+            define( 'AUDIO_DIARY_CLASSES_PATH', AUDIO_DIARY_PATH . 'classes/' );
+        }
+        if ( ! defined( 'AUDIO_DIARY_IMAGES' ) ) {
+            define( 'AUDIO_DIARY_IMAGES', AUDIO_DIARY_PATH . 'build/images' );
+        }
+        if ( ! defined( 'AUDIO_DIARY_MODULES_PATH' ) ) {
+            define( 'AUDIO_DIARY_MODULES_PATH', AUDIO_DIARY_PATH . 'modules/' );
+        }
+        if ( ! defined( 'AUDIO_DIARY_ASSETS_PATH' ) ) {
+            define( 'AUDIO_DIARY_ASSETS_PATH', AUDIO_DIARY_PATH . 'assets/' );
+        }
+        if ( ! defined( 'AUDIO_DIARY_URL' ) ) {
+            define( 'AUDIO_DIARY_URL', plugins_url( '/', AUDIO_DIARY_FILE ) );
+        }
+    }
 	/**
 	 * Require loader Audio diary class.
 	 *

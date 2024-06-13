@@ -42,21 +42,22 @@ class Audio_Diary_loader{
 	 */
 	private function load_dependencies() {
 
-		require_once AUDIO_DIARY_CLASSES_PATH . '';
-		require_once AUDIO_DIARY_CLASSES_PATH . '';
+		// require_once AUDIO_DIARY_CLASSES_PATH . '';
+		// require_once AUDIO_DIARY_CLASSES_PATH . '';
 
 		// The class responsible for the settings page
-		require_once AUDIO_DIARY_CLASSES_PATH . '';
+		require_once AUDIO_DIARY_CLASSES_PATH . 'class_admin_page.php';
 
 		// The class responsible for defining main options of the plugin.
-		require_once AUDIO_DIARY_CLASSES_PATH . '';
+
+		// require_once AUDIO_DIARY_CLASSES_PATH . '';
 
 		// The class responsible for defining REST Routs API of the plugin.
-		require_once AUDIO_DIARY_CLASSES_PATH . '';
+		// require_once AUDIO_DIARY_CLASSES_PATH . '';
 
 		// The class responsible for defining all actions for edd.
         
-		require_once AUDIO_DIARY_MODULES_PATH . '';
+		// require_once AUDIO_DIARY_MODULES_PATH . '';
 }
 
 }
