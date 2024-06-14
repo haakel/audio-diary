@@ -1,0 +1,50 @@
+body {
+    background-color: #d1cbcb;
+    color: #fff;
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+.wrap {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+#recording-button {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 20px;
+    font-size: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100px;
+    height: 100px;
+    background-image: url('../img/microphone.png'); /* آدرس تصویر میکروفون */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 50%;
+    display: block;
+    margin: 20px auto; /* برای قرارگیری در وسط صفحه */
+}
+
+#visualizer {
+    display: none;
+    margin-top: 20px;
+}
+
+audio {
+    display: none;
+    margin: 20px auto;
+    width: 300px;
+}
+
+audio.show {
+    display: block;
+}
+
+canvas {
+    display: block;
+    margin: 20px auto;
+}

@@ -30,6 +30,8 @@ class Audio_Diary_Admin_Page {
         add_action('admin_menu', array($this, 'add_menu_item'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('wp_ajax_save_audio', array($this, 'save_audio'));
+    
+        $this->create_audio_folder();
     }
 
     public function add_menu_item() {
@@ -54,60 +56,53 @@ class Audio_Diary_Admin_Page {
     }
 
     public function enqueue_scripts() {
-        $script_url = plugins_url( 'js/audio-diary.js', AUDIO_DIARY_ASSETS_PATH );
-        wp_enqueue_script('audio-diary-script', $script_url, array('jquery'), '1.0', true);
+        wp_enqueue_style('audio-diary-style', plugin_dir_url(__FILE__) . '../assets/css/style.css');
+        wp_enqueue_style('audio-diary-toast-style', plugin_dir_url(__FILE__) . '../assets/css/jquery.toast.css');
+        wp_enqueue_script('audio-diary-script',  plugin_dir_url(__FILE__) ."../assets/js/audio-diary.js", array('jquery'), '1.0', true);
+        wp_enqueue_script('audio-diary-toast-script',  plugin_dir_url(__FILE__) ."../assets/js/jquery.toast.js", array('jquery'), '1.0', true);
+
     }
 
-    public function render_record_page() {
-        ?>
-<div class="wrap">
-    <h1><?php _e('Audio Diary', 'audio-diary'); ?></h1>
-    <button id="start-recording"><?php _e('Start Recording', 'audio-diary'); ?></button>
-    <button id="stop-recording" disabled><?php _e('Stop Recording', 'audio-diary'); ?></button>
-    <audio id="audio-player" controls></audio>
-</div>
-<?php
+    public function render_page() {
+        include_once AUDIO_DIARY_MODULES_PATH."audio-diary-admin-page.php";
     }
 
     public function render_list_page() {
-        $uploads = wp_upload_dir();
-        $audio_files = glob($uploads['basedir'] . '/audio-diary/*.wav');
-
-        ?>
-<div class="wrap">
-    <h1><?php _e('Recorded Audios', 'audio-diary'); ?></h1>
-    <ul>
-        <?php foreach ($audio_files as $file) : ?>
-        <li>
-            <audio controls src="<?php echo $uploads['baseurl'] . '/audio-diary/' . basename($file); ?>"></audio>
-        </li>
-        <?php endforeach; ?>
-    </ul>
-</div>
-<?php
+        include_once AUDIO_DIARY_MODULES_PATH."audio-diary-admin-list-page.php";
     }
 
-    public function save_audio() {
-        check_admin_referer('audio_diary_nonce');
-
-        $audio_data = $_POST['audio_data'];
-        $audio_data = base64_decode(str_replace('data:audio/wav;base64,', '', $audio_data));
-
+    private function create_audio_folder() {
         $uploads = wp_upload_dir();
-        $audio_dir = $uploads['basedir'] . '/audio-diary/';
+        $audio_dir = $uploads['basedir'] . '/audio-diary';
+
         if (!file_exists($audio_dir)) {
-            mkdir($audio_dir, 0755, true);
+            wp_mkdir_p($audio_dir);
         }
+}
+    public function save_audio() {
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('Unauthorized');
+        return;
+    }
 
-        $filename = $audio_dir . uniqid() . '.wav';
-        file_put_contents($filename, $audio_data);
+    if (empty($_FILES['audio_data'])) {
+        wp_send_json_error('No file uploaded');
+        return;
+    }
 
-        wp_send_json_success();
+    $file = $_FILES['audio_data'];
+    $uploads = wp_upload_dir();
+    $upload_path = $uploads['basedir'] . '/audio-diary/';
+
+    $file_name = 'audio-' . time() . '.wav';
+    $file_path = $upload_path . $file_name;
+
+    if (move_uploaded_file($file['tmp_name'], $file_path)) {
+        wp_send_json_success('File uploaded');
+    } else {
+        wp_send_json_error('File upload failed');
     }
 }
 
-if (class_exists('Audio_Diary')) {
-    $audio_diary = new Audio_Diary();
 }
-
 Audio_Diary_Admin_Page::get_instance();
