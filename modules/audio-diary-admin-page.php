@@ -1,4 +1,4 @@
-<div class="wrap">
+<div class="wrap audio-diary-admin-page">
     <h1><?php _e('Audio Diary', 'audio-diary'); ?></h1>
     <button id="recording-button"></button>
     <audio id="audio-player" controls></audio>
