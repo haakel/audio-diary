@@ -56,7 +56,25 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* سایه برای دادن عمق */
 }
 
-/* افزودن این استایل برای تغییر رنگ و ظاهر خط */
-.audio-diary-admin-page canvas {
-    background-color: transparent; /* حذف پس‌زمینه سیاه */
+#visualizer {
+    background-color: #f9f9f9; /* پس‌زمینه ملایم */
+    border-radius: 8px;
+    border: 1px solid #ccc;
 }
+
+
+.wrap table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.wrap th, .wrap td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.wrap th {
+    background-color: #f2f2f2;
+    text-align: left;
+}
+

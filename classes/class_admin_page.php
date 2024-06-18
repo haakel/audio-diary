@@ -30,10 +30,34 @@ class Audio_Diary_Admin_Page {
         add_action('admin_menu', array($this, 'add_menu_item'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('wp_ajax_save_audio', array($this, 'save_audio'));
-    
+        add_action('wp_ajax_delete_audio_files', 'delete_audio_files');
         $this->create_audio_folder();
     }
-
+  
+    function delete_audio_files() {
+        check_ajax_referer('audio-diary-nonce', '_ajax_nonce');
+    
+        if (!isset($_POST['files']) || !is_array($_POST['files'])) {
+            wp_send_json_error('Invalid request');
+        }
+    
+        $uploads = wp_upload_dir();
+        $audio_dir = $uploads['basedir'] . '/audio-diary/';
+        $deleted = [];
+    
+        foreach ($_POST['files'] as $file) {
+            $file_path = $audio_dir . basename($file);
+            if (file_exists($file_path) && unlink($file_path)) {
+                $deleted[] = $file;
+            }
+        }
+    
+        if (empty($deleted)) {
+            wp_send_json_error('No files deleted');
+        }
+    
+        wp_send_json_success($deleted);
+    }
     public function add_menu_item() {
         add_menu_page(
             'Audio Diary',         // عنوان صفحه

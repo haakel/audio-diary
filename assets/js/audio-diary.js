@@ -16,27 +16,34 @@ jQuery(document).ready(function($) {
         const canvas = document.getElementById('visualizer');
         const canvasCtx = canvas.getContext('2d');
 
-        function draw() {
+               function draw() {
             requestAnimationFrame(draw);
-
             analyser.getByteTimeDomainData(dataArray);
 
-            canvasCtx.fillStyle = 'rgb(0, 0, 0)';
-            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+            canvasCtx.clearRect(0, 0, canvas.width, canvas.height); // حذف پس‌زمینه سیاه
 
+            // تنظیمات خط وسط
+            const centerY = canvas.height / 2;
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(0, centerY);
+            canvasCtx.lineTo(canvas.width, centerY);
+            canvasCtx.strokeStyle = 'rgba(0, 0, 0, 0.2)'; // خط وسط نیمه شفاف
+            canvasCtx.lineWidth = 1;
+            canvasCtx.stroke();
+
+            // تنظیمات خط موج صدا
             canvasCtx.lineWidth = 2;
-            canvasCtx.strokeStyle = 'rgb(255, 255, 255)';
+            canvasCtx.strokeStyle = 'rgb(0, 0, 0)'; // خط موج صدا مشکی
 
             canvasCtx.beginPath();
-
             let sliceWidth = canvas.width * 1.0 / bufferLength;
             let x = 0;
 
-            for(let i = 0; i < bufferLength; i++) {
+            for (let i = 0; i < bufferLength; i++) {
                 let v = dataArray[i] / 128.0;
                 let y = v * canvas.height / 2;
 
-                if(i === 0) {
+                if (i === 0) {
                     canvasCtx.moveTo(x, y);
                 } else {
                     canvasCtx.lineTo(x, y);
@@ -99,7 +106,7 @@ jQuery(document).ready(function($) {
                                     $.toast({
                                         text: "Failed to save audio", // Text that is to be shown in the toast
                                         heading: 'Note', // Optional heading to be shown on the toast
-                                        icon: 'Error', // Type of toast icon
+                                        icon: 'error', // Type of toast icon
                                         showHideTransition: 'fade', // fade, slide or plain
                                         allowToastClose: true, // Boolean value true or false
                                         hideAfter: 3000, // false to make it sticky or number representing the miliseconds as time after which toast needs to be hidden
