@@ -16,24 +16,22 @@ jQuery(document).ready(function($) {
         const canvas = document.getElementById('visualizer');
         const canvasCtx = canvas.getContext('2d');
 
-               function draw() {
+        function draw() {
             requestAnimationFrame(draw);
             analyser.getByteTimeDomainData(dataArray);
 
-            canvasCtx.clearRect(0, 0, canvas.width, canvas.height); // حذف پس‌زمینه سیاه
+            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // تنظیمات خط وسط
             const centerY = canvas.height / 2;
             canvasCtx.beginPath();
             canvasCtx.moveTo(0, centerY);
             canvasCtx.lineTo(canvas.width, centerY);
-            canvasCtx.strokeStyle = 'rgba(0, 0, 0, 0.2)'; // خط وسط نیمه شفاف
+            canvasCtx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
             canvasCtx.lineWidth = 1;
             canvasCtx.stroke();
 
-            // تنظیمات خط موج صدا
             canvasCtx.lineWidth = 2;
-            canvasCtx.strokeStyle = 'rgb(0, 0, 0)'; // خط موج صدا مشکی
+            canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
 
             canvasCtx.beginPath();
             let sliceWidth = canvas.width * 1.0 / bufferLength;
@@ -90,31 +88,31 @@ jQuery(document).ready(function($) {
                             success: function(response) {
                                 if (response.success) {
                                     $.toast({
-                                        text: "Audio saved successfully", // Text that is to be shown in the toast
-                                        heading: 'Note', // Optional heading to be shown on the toast
-                                        icon: 'success', // Type of toast icon
-                                        showHideTransition: 'fade', // fade, slide or plain
-                                        allowToastClose: true, // Boolean value true or false
-                                        hideAfter: 3000, // false to make it sticky or number representing the miliseconds as time after which toast needs to be hidden
-                                        stack: 3, // false if there should be only one toast at a time or a number representing the maximum number of toasts to be shown at a time
-                                        position: 'bottom-center', // bottom-left or bottom-right or bottom-center or top-left or top-right or top-center or mid-center or an object representing the left, right, top, bottom values
-                                        textAlign: 'left',  // Text alignment i.e. left, right or center
-                                        loader: true,  // Whether to show loader or not. True by default
-                                        loaderBg: '#9EC600',  // Background color of the toast loader
+                                        text: "Audio saved successfully",
+                                        heading: 'Note',
+                                        icon: 'success',
+                                        showHideTransition: 'fade',
+                                        allowToastClose: true,
+                                        hideAfter: 3000,
+                                        stack: 3,
+                                        position: 'bottom-center',
+                                        textAlign: 'left',
+                                        loader: true,
+                                        loaderBg: '#9EC600',
                                     });
                                 } else {
                                     $.toast({
-                                        text: "Failed to save audio", // Text that is to be shown in the toast
-                                        heading: 'Note', // Optional heading to be shown on the toast
-                                        icon: 'error', // Type of toast icon
-                                        showHideTransition: 'fade', // fade, slide or plain
-                                        allowToastClose: true, // Boolean value true or false
-                                        hideAfter: 3000, // false to make it sticky or number representing the miliseconds as time after which toast needs to be hidden
-                                        stack: 3, // false if there should be only one toast at a time or a number representing the maximum number of toasts to be shown at a time
-                                        position: 'top-center', // bottom-left or bottom-right or bottom-center or top-left or top-right or top-center or mid-center or an object representing the left, right, top, bottom values
-                                        textAlign: 'left',  // Text alignment i.e. left, right or center
-                                        loader: true,  // Whether to show loader or not. True by default
-                                        loaderBg: '#9EC600',  // Background color of the toast loader
+                                        text: "Failed to save audio",
+                                        heading: 'Note',
+                                        icon: 'error',
+                                        showHideTransition: 'fade',
+                                        allowToastClose: true,
+                                        hideAfter: 3000,
+                                        stack: 3,
+                                        position: 'top-center',
+                                        textAlign: 'left',
+                                        loader: true,
+                                        loaderBg: '#9EC600',
                                     });
                                 }
                             }
@@ -123,13 +121,154 @@ jQuery(document).ready(function($) {
 
                     $('#visualizer').show();
                     isRecording = true;
-                    $('#recording-button').css('background-color', 'green'); // تغییر رنگ دکمه به سبز برای نشان دادن حالت ضبط
+                    $('#recording-button').css('background-color', 'green');
                 });
         } else {
             mediaRecorder.stop();
             $('#visualizer').hide();
             isRecording = false;
-            $('#recording-button').css('background-color', 'red'); // بازگشت به رنگ قرمز
+            $('#recording-button').css('background-color', 'red');
+        }
+    });
+
+    $('.delete-audio').on('click', function() {
+        let fileName = $(this).data('file');
+        let $audioRow = $(this).closest('tr'); // یافتن ردیف حاوی فایل صوتی برای حذف آن
+    
+        if (confirm("Are you sure you want to delete this audio file?")) {
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'delete_audio',
+                    file_name: fileName
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $.toast({
+                            text: "Audio file deleted successfully",
+                            heading: 'Note',
+                            icon: 'success',
+                            showHideTransition: 'fade',
+                            allowToastClose: true,
+                            hideAfter: 3000,
+                            stack: 3,
+                            position: 'bottom-center',
+                            textAlign: 'left',
+                            loader: true,
+                            loaderBg: '#9EC600',
+                        });
+    
+                        // پس از حذف موفق فایل، ردیف مربوطه را از لیست حذف کنید
+                        $audioRow.fadeOut(400, function() {
+                            $(this).remove();
+                        });
+                    } else {
+                        $.toast({
+                            text: "Failed to delete audio file: " + response.data,
+                            heading: 'Error',
+                            icon: 'error',
+                            showHideTransition: 'fade',
+                            allowToastClose: true,
+                            hideAfter: 3000,
+                            stack: 3,
+                            position: 'top-center',
+                            textAlign: 'left',
+                            loader: true,
+                            loaderBg: '#FF0000',
+                        });
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('AJAX Error: ' + textStatus + ': ' + errorThrown);
+                    $.toast({
+                        text: "AJAX Error: " + textStatus + ": " + errorThrown,
+                        heading: 'Error',
+                        icon: 'error',
+                        showHideTransition: 'fade',
+                        allowToastClose: true,
+                        hideAfter: 3000,
+                        stack: 3,
+                        position: 'top-center',
+                        textAlign: 'left',
+                        loader: true,
+                        loaderBg: '#FF0000',
+                    });
+                }
+            });
+        }
+    });
+    
+    // حذف فایل‌های انتخاب‌شده
+    $('#delete-selected').on('click', function() {
+        let selectedFiles = [];
+        $('.select-audio:checked').each(function() {
+            selectedFiles.push($(this).val());
+        });
+    
+        if (selectedFiles.length > 0 && confirm("Are you sure you want to delete selected audio files?")) {
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'delete_selected_audios',
+                    files: selectedFiles
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $.toast({
+                            text: "Selected audio files deleted successfully",
+                            heading: 'Note',
+                            icon: 'success',
+                            showHideTransition: 'fade',
+                            allowToastClose: true,
+                            hideAfter: 3000,
+                            stack: 3,
+                            position: 'bottom-center',
+                            textAlign: 'left',
+                            loader: true,
+                            loaderBg: '#9EC600',
+                        });
+    
+                        // پس از حذف موفق فایل‌ها، لیست را به‌روزرسانی کنید
+                        selectedFiles.forEach(function(fileName) {
+                            $('.delete-audio[data-file="' + fileName + '"]').closest('tr').fadeOut(400, function() {
+                                $(this).remove();
+                            });
+                        });
+                    } else {
+                        $.toast({
+                            text: "Failed to delete selected audio files: " + response.data,
+                            heading: 'Error',
+                            icon: 'error',
+                            showHideTransition: 'fade',
+                            allowToastClose: true,
+                            hideAfter: 3000,
+                            stack: 3,
+                            position: 'top-center',
+                            textAlign: 'left',
+                            loader: true,
+                            loaderBg: '#FF0000',
+                        });
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('AJAX Error: ' + textStatus + ': ' + errorThrown);
+                    $.toast({
+                        text: "AJAX Error: " + textStatus + ": " + errorThrown,
+                        heading: 'Error',
+                        icon: 'error',
+                        showHideTransition: 'fade',
+                        allowToastClose: true,
+                        hideAfter: 3000,
+                        stack: 3,
+                        position: 'top-center',
+                        textAlign: 'left',
+                        loader: true,
+                        loaderBg: '#FF0000',
+                    });
+                }
+            });
         }
     });
 });

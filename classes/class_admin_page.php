@@ -30,33 +30,70 @@ class Audio_Diary_Admin_Page {
         add_action('admin_menu', array($this, 'add_menu_item'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('wp_ajax_save_audio', array($this, 'save_audio'));
-        add_action('wp_ajax_delete_audio_files', 'delete_audio_files');
+        add_action('wp_ajax_delete_audio', array($this, 'delete_audio'));
+        add_action('wp_ajax_delete_selected_audios', array($this, 'delete_selected_audios'));
+        
+        
+
         $this->create_audio_folder();
     }
   
-    function delete_audio_files() {
-        check_ajax_referer('audio-diary-nonce', '_ajax_nonce');
+    function delete_audio() {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized');
+            return;
+        }
     
-        if (!isset($_POST['files']) || !is_array($_POST['files'])) {
-            wp_send_json_error('Invalid request');
+        if (empty($_POST['file_name'])) {
+            wp_send_json_error('No file specified');
+            return;
+        }
+    
+        $file_name = sanitize_file_name($_POST['file_name']);
+        $uploads = wp_upload_dir();
+        $file_path = $uploads['basedir'] . '/audio-diary/' . $file_name;
+    
+        if (file_exists($file_path) && unlink($file_path)) {
+            wp_send_json_success('File deleted');
+        } else {
+            $error = file_exists($file_path) ? 'Failed to delete file' : 'File does not exist';
+            wp_send_json_error($error);
+        }
+    }
+    
+    function delete_selected_audios() {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized');
+            return;
+        }
+    
+        if (empty($_POST['files']) || !is_array($_POST['files'])) {
+            wp_send_json_error('No files specified');
+            return;
         }
     
         $uploads = wp_upload_dir();
-        $audio_dir = $uploads['basedir'] . '/audio-diary/';
-        $deleted = [];
+        $base_path = $uploads['basedir'] . '/audio-diary/';
+        $errors = [];
     
-        foreach ($_POST['files'] as $file) {
-            $file_path = $audio_dir . basename($file);
-            if (file_exists($file_path) && unlink($file_path)) {
-                $deleted[] = $file;
+        foreach ($_POST['files'] as $file_name) {
+            $file_name = sanitize_file_name($file_name);
+            $file_path = $base_path . $file_name;
+    
+            if (file_exists($file_path)) {
+                if (!unlink($file_path)) {
+                    $errors[] = $file_name;
+                }
+            } else {
+                $errors[] = $file_name;
             }
         }
     
-        if (empty($deleted)) {
-            wp_send_json_error('No files deleted');
+        if (empty($errors)) {
+            wp_send_json_success('All files deleted');
+        } else {
+            wp_send_json_error('Failed to delete files: ' . implode(', ', $errors));
         }
-    
-        wp_send_json_success($deleted);
     }
     public function add_menu_item() {
         add_menu_page(
@@ -103,7 +140,7 @@ class Audio_Diary_Admin_Page {
             wp_mkdir_p($audio_dir);
         }
 }
-    public function save_audio() {
+public function save_audio() {
     if (!current_user_can('manage_options')) {
         wp_send_json_error('Unauthorized');
         return;
@@ -118,15 +155,22 @@ class Audio_Diary_Admin_Page {
     $uploads = wp_upload_dir();
     $upload_path = $uploads['basedir'] . '/audio-diary/';
 
+    // Check if the directory exists, if not create it
+    if (!file_exists($upload_path)) {
+        wp_mkdir_p($upload_path);
+    }
+
     $file_name = 'audio-' . time() . '.wav';
     $file_path = $upload_path . $file_name;
 
+    // Move the uploaded file to the audio-diary directory
     if (move_uploaded_file($file['tmp_name'], $file_path)) {
         wp_send_json_success('File uploaded');
     } else {
         wp_send_json_error('File upload failed');
     }
 }
+
 
 }
 Audio_Diary_Admin_Page::get_instance();

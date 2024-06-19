@@ -9,7 +9,6 @@
     color: #fff;
     font-family: Arial, sans-serif;
 }
-
 .audio-diary-admin-page #recording-button {
     background-color: red;
     color: white;
@@ -56,25 +55,26 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* سایه برای دادن عمق */
 }
 
-#visualizer {
+.audio-diary-admin-list-page #visualizer {
     background-color: #f9f9f9; /* پس‌زمینه ملایم */
     border-radius: 8px;
     border: 1px solid #ccc;
 }
 
-
-.wrap table {
+.audio-diary-admin-list-page table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.wrap th, .wrap td {
+.audio-diary-admin-list-page th,
+.audio-diary-admin-list-page td {
     border: 1px solid #ddd;
     padding: 8px;
 }
 
-.wrap th {
+.audio-diary-admin-list-page th {
     background-color: #f2f2f2;
     text-align: left;
 }
+
 
