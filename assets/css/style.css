@@ -60,21 +60,96 @@
     border-radius: 8px;
     border: 1px solid #ccc;
 }
+/* تنظیمات کلی صفحه مدیریت */
+.audio-diary-admin-list-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f4f4f9;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+.audio-diary-admin-list-page h1 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.audio-diary-admin-list-page button {
+    background-color: #0073aa;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.audio-diary-admin-list-page button:hover {
+    background-color: #005177;
+}
 
 .audio-diary-admin-list-page table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 20px;
 }
 
 .audio-diary-admin-list-page th,
 .audio-diary-admin-list-page td {
     border: 1px solid #ddd;
-    padding: 8px;
+    padding: 10px;
+    text-align: center;
 }
 
 .audio-diary-admin-list-page th {
-    background-color: #f2f2f2;
-    text-align: left;
+    background-color: #0073aa;
+    color: white;
+    font-weight: bold;
 }
 
+.audio-diary-admin-list-page tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
 
+.audio-diary-admin-li   st-page tr:hover {
+    background-color: #f1f1f1;
+}
+
+.audio-diary-admin-list-page td audio {
+    display: block;
+    margin: 0 auto;
+}
+
+/* استایل‌های اضافی برای ورودی‌های چک‌باکس و دکمه حذف */
+.audio-diary-admin-list-page .select-audio {
+    cursor: pointer;
+}
+
+.audio-diary-admin-list-page .delete-audio {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.audio-diary-admin-list-page .delete-audio:hover {
+    background-color: #c82333;
+}
+
+/* استایل‌های برای فوتر و هدر جدول */
+.audio-diary-admin-list-page thead {
+    border-bottom: 2px solid #0073aa;
+}
+
+.audio-diary-admin-list-page tfoot {
+    border-top: 2px solid #0073aa;
+    background-color: #f2f2f2;
+}
