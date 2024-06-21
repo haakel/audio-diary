@@ -13,6 +13,8 @@ usort($audio_files, function($a, $b) {
 <div class="wrap audio-diary-admin-list-page">
     <h1><?php _e('Recorded Audios', 'audio-diary'); ?></h1>
     <button id="delete-selected"><?php _e('Delete Selected', 'audio-diary'); ?></button>
+    <button id="download-zip"><?php _e('Download Selected as ZIP', 'audio-diary'); ?></button>
+    <button id="select-all" data-select-all="true">Select All</button>
     <table>
         <thead>
             <tr>

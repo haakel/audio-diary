@@ -57,6 +57,47 @@ jQuery(document).ready(function($) {
         draw();
     }
 
+        
+        $('#download-zip').on('click', function() {
+        var selectedFiles = [];
+        $('.select-audio:checked').each(function() {
+            selectedFiles.push($(this).val());
+        });
+
+        if (selectedFiles.length > 0) {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '';
+
+            selectedFiles.forEach(function(file) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'selected_files[]';
+                input.value = file;
+                form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+        } else {
+            $.toast({
+                text: "Please select at least one audio file to download.",
+                heading: 'Note',
+                icon: 'error',
+                showHideTransition: 'fade',
+                allowToastClose: true,
+                hideAfter: 3000,
+                stack: 3,
+                position: 'bottom-center',
+                textAlign: 'left',
+                loader: true,
+                loaderBg: '#FF0000',
+            });
+        }
+    });
+
+
+
     $('#recording-button').on('click', function() {
         if (!isRecording) {
             navigator.mediaDevices.getUserMedia({ audio: true })
@@ -109,7 +150,7 @@ jQuery(document).ready(function($) {
                                         allowToastClose: true,
                                         hideAfter: 3000,
                                         stack: 3,
-                                        position: 'top-center',
+                                        position: 'bottom-center',
                                         textAlign: 'left',
                                         loader: true,
                                         loaderBg: '#9EC600',
@@ -131,22 +172,24 @@ jQuery(document).ready(function($) {
         }
     });
 
-    $('.delete-audio').on('click', function() {
-        let fileName = $(this).data('file');
-        let $audioRow = $(this).closest('tr'); // یافتن ردیف حاوی فایل صوتی برای حذف آن
+    $('#download-selected').on('click', function() {
+        let selectedFiles = [];
+        $('.select-audio:checked').each(function() {
+            selectedFiles.push($(this).val());
+        });
     
-        if (confirm("Are you sure you want to delete this audio file?")) {
+        if (selectedFiles.length > 0) {
             $.ajax({
                 url: ajaxurl,
                 type: 'POST',
                 data: {
-                    action: 'delete_audio',
-                    file_name: fileName
+                    action: 'download_zip',
+                    files: selectedFiles
                 },
                 success: function(response) {
                     if (response.success) {
                         $.toast({
-                            text: "Audio file deleted successfully",
+                            text: "Zip file created successfully",
                             heading: 'Note',
                             icon: 'success',
                             showHideTransition: 'fade',
@@ -159,20 +202,26 @@ jQuery(document).ready(function($) {
                             loaderBg: '#9EC600',
                         });
     
-                        // پس از حذف موفق فایل، ردیف مربوطه را از لیست حذف کنید
-                        $audioRow.fadeOut(400, function() {
-                            $(this).remove();
-                        });
+                        // ایجاد لینک دانلود
+                        let downloadLink = document.createElement('a');
+                        downloadLink.href = response.data.zip_url;
+                        downloadLink.download = response.data.zip_url.split('/').pop();
+                        document.body.appendChild(downloadLink);
+                        downloadLink.click();
+                        document.body.removeChild(downloadLink);
+    
+                        // برداشتن انتخاب فایل‌های صوتی
+                        $('.select-audio').prop('checked', false);
                     } else {
                         $.toast({
-                            text: "Failed to delete audio file: " + response.data,
+                            text: "Failed to create zip file: " + response.data,
                             heading: 'Error',
                             icon: 'error',
                             showHideTransition: 'fade',
                             allowToastClose: true,
                             hideAfter: 3000,
                             stack: 3,
-                            position: 'top-center',
+                            position: 'bottom-center',
                             textAlign: 'left',
                             loader: true,
                             loaderBg: '#FF0000',
@@ -189,7 +238,7 @@ jQuery(document).ready(function($) {
                         allowToastClose: true,
                         hideAfter: 3000,
                         stack: 3,
-                        position: 'top-center',
+                        position: 'bottom-center',
                         textAlign: 'left',
                         loader: true,
                         loaderBg: '#FF0000',
@@ -198,6 +247,22 @@ jQuery(document).ready(function($) {
             });
         }
     });
+
+    $('#select-all').on('click', function() {
+        let isSelectAll = $(this).data('select-all');
+        
+        if (isSelectAll) {
+            $('.select-audio').prop('checked', true);
+            $(this).text('Unselect All');
+        } else {
+            $('.select-audio').prop('checked', false);
+            $(this).text('Select All');
+        }
+        
+        // تغییر حالت دکمه
+        $(this).data('select-all', !isSelectAll);
+    });
+    
     
     // حذف فایل‌های انتخاب‌شده
     $('#delete-selected').on('click', function() {
@@ -245,7 +310,7 @@ jQuery(document).ready(function($) {
                             allowToastClose: true,
                             hideAfter: 3000,
                             stack: 3,
-                            position: 'top-center',
+                            position: 'bottom-center',
                             textAlign: 'left',
                             loader: true,
                             loaderBg: '#FF0000',
@@ -262,12 +327,26 @@ jQuery(document).ready(function($) {
                         allowToastClose: true,
                         hideAfter: 3000,
                         stack: 3,
-                        position: 'top-center',
+                        position: 'bottom-center',
                         textAlign: 'left',
                         loader: true,
                         loaderBg: '#FF0000',
                     });
                 }
+            });
+        } else {
+            $.toast({
+                text: "Please select at least one audio file to delete.",
+                heading: 'Error',
+                icon: 'error',
+                showHideTransition: 'fade',
+                allowToastClose: true,
+                hideAfter: 3000,
+                stack: 3,
+                position: 'bottom-center',
+                textAlign: 'left',
+                loader: true,
+                loaderBg: '#FF0000',
             });
         }
     });

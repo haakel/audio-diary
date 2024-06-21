@@ -33,6 +33,7 @@ class Audio_Diary_loader{
 	 */
 	public function __construct() {
 		$this->load_dependencies();
+		
 	}
     /**
 	 * Load the required dependencies for this plugin.

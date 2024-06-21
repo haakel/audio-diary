@@ -32,12 +32,67 @@ class Audio_Diary_Admin_Page {
         add_action('wp_ajax_save_audio', array($this, 'save_audio'));
         add_action('wp_ajax_delete_audio', array($this, 'delete_audio'));
         add_action('wp_ajax_delete_selected_audios', array($this, 'delete_selected_audios'));
-        
-        
-
+        add_action('wp_ajax_download_zip', array($this,'handle_download_zip'));
         $this->create_audio_folder();
     }
-  
+
+    function delete_old_zip_files() {
+        $uploads = wp_upload_dir();
+        $files = glob($uploads['basedir'] . '/audio-diary-selected-*.zip');
+        $time_limit = 3600; // 1 hour in seconds
+    
+        foreach ($files as $file) {
+            if (filemtime($file) < (time() - $time_limit)) {
+                unlink($file);
+            }
+        }
+    }
+    
+
+    
+
+
+
+
+
+
+    function handle_download_zip() {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => 'Unauthorized']);
+            return;
+        }
+    
+        if (!isset($_POST['files']) || !is_array($_POST['files'])) {
+            wp_send_json_error(['message' => 'Invalid request']);
+            return;
+        }
+    
+        $selected_files = $_POST['files'];
+        $uploads = wp_upload_dir();
+        $zip = new ZipArchive();
+        $zip_filename = 'audio-diary-selected-' . time() . '.zip';
+        $zip_filepath = $uploads['basedir'] . '/' . $zip_filename;
+    
+        if ($zip->open($zip_filepath, ZipArchive::CREATE) !== TRUE) {
+            wp_send_json_error(['message' => 'Cannot create zip file']);
+            return;
+        }
+    
+        foreach ($selected_files as $file) {
+            $file_path = $uploads['basedir'] . '/audio-diary/' . $file;
+            if (file_exists($file_path)) {
+                $zip->addFile($file_path, $file);
+            }
+        }
+    
+        $zip->close();
+    
+        $zip_url = $uploads['baseurl'] . '/' . $zip_filename;
+    
+        wp_send_json_success(['zip_url' => $zip_url]);
+    }
+    
+    
     function delete_audio() {
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Unauthorized');

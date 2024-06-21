@@ -9,6 +9,35 @@ if ( ! defined( 'ABSPATH' ) ) {
     echo "what the hell are you doing here?";
 	exit;
 	}
+    
+    // فعال کردن کرون جاب در هنگام فعال‌سازی افزونه
+register_activation_hook(__FILE__, 'audio_diary_activate');
+function audio_diary_activate() {
+    if (!wp_next_scheduled('delete_old_zip_files_cron')) {
+        wp_schedule_event(time(), 'hourly', 'delete_old_zip_files_cron');
+    }
+}
+
+// غیرفعال کردن کرون جاب در هنگام غیرفعال‌سازی افزونه
+register_deactivation_hook(__FILE__, 'audio_diary_deactivate');
+function audio_diary_deactivate() {
+    $timestamp = wp_next_scheduled('delete_old_zip_files_cron');
+    wp_unschedule_event($timestamp, 'delete_old_zip_files_cron');
+}
+
+// تعریف اکشن برای حذف فایل‌های زیپ قدیمی
+add_action('delete_old_zip_files_cron', 'delete_old_zip_files');
+function delete_old_zip_files() {
+    $uploads = wp_upload_dir();
+    $files = glob($uploads['basedir'] . '/audio-diary-selected-*.zip');
+    $time_limit = 3600; // 1 ساعت به ثانیه
+
+    foreach ($files as $file) {
+        if (filemtime($file) < (time() - $time_limit)) {
+            unlink($file);
+        }
+    }
+}
 	
 	class Audio_diary{
   	/**
