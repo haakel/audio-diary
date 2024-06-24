@@ -47,14 +47,6 @@ class Audio_Diary_Admin_Page {
             }
         }
     }
-    
-
-    
-
-
-
-
-
 
     function handle_download_zip() {
         if (!current_user_can('manage_options')) {
@@ -195,6 +187,7 @@ class Audio_Diary_Admin_Page {
             wp_mkdir_p($audio_dir);
         }
 }
+
 public function save_audio() {
     if (!current_user_can('manage_options')) {
         wp_send_json_error('Unauthorized');
@@ -210,21 +203,17 @@ public function save_audio() {
     $uploads = wp_upload_dir();
     $upload_path = $uploads['basedir'] . '/audio-diary/';
 
-    // Check if the directory exists, if not create it
-    if (!file_exists($upload_path)) {
-        wp_mkdir_p($upload_path);
-    }
-
-    $file_name = 'audio-' . time() . '.wav';
+    $date_time = date('Y-m-d H-i-s');
+    $file_name = 'memory-' . $date_time . '.wav';
     $file_path = $upload_path . $file_name;
 
-    // Move the uploaded file to the audio-diary directory
     if (move_uploaded_file($file['tmp_name'], $file_path)) {
-        wp_send_json_success('File uploaded');
+        wp_send_json_success(['message' => 'File uploaded', 'file_name' => $file_name]);
     } else {
         wp_send_json_error('File upload failed');
     }
 }
+
 
 
 }
