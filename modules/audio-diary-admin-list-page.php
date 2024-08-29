@@ -1,4 +1,6 @@
 <?php
+include_once 'jdf.php'; // اضافه کردن کتابخانه jdf
+
 $uploads = wp_upload_dir();
 $audio_files = glob($uploads['basedir'] . '/audio-diary/*.wav');
 
@@ -27,8 +29,8 @@ usort($audio_files, function($a, $b) {
         </thead>
         <tbody>
             <?php foreach ($audio_files as $file) : 
-                $file_date = date("Y-m-d", filemtime($file));
-                $file_time = date("H:i:s", filemtime($file));
+                $file_date = jdate("Y-m-d", filemtime($file)); // تبدیل به تاریخ شمسی
+                $file_time = jdate("H:i:s", filemtime($file)); // زمان را به همان صورت نمایش می‌دهیم
                 $file_url = $uploads['baseurl'] . '/audio-diary/' . basename($file);
                 $file_name = basename($file);
             ?>
