@@ -120,28 +120,48 @@ class Audio_Diary_Admin_Page {
         }
     
         $uploads = wp_upload_dir();
-        $base_path = $uploads['basedir'] . '/audio-diary/';
+        $base_path = wp_normalize_path($uploads['basedir'] . '/audio-diary/');
         $errors = [];
+    
+        // Print existing files in the directory
+        $existing_files = glob($base_path . '*');
+        error_log("Existing files in audio-diary directory:");
+        foreach ($existing_files as $file) {
+            error_log(basename($file));
+        }
     
         foreach ($_POST['files'] as $file_name) {
             $file_name = sanitize_file_name($file_name);
-            $file_path = $base_path . $file_name;
+    
+            // اصلاح نام فایل، جایگزین کردن فاصله با خط تیره
+            $file_name = str_replace(' ', '-', $file_name);
+    
+            $file_path = wp_normalize_path($base_path . $file_name);
+    
+            error_log("Trying to delete: " . $file_path);
     
             if (file_exists($file_path)) {
                 if (!unlink($file_path)) {
+                    error_log("Failed to delete: " . $file_path);
                     $errors[] = $file_name;
+                } else {
+                    error_log("Deleted: " . $file_path);
                 }
             } else {
+                error_log("File not found: " . $file_path);
                 $errors[] = $file_name;
             }
         }
     
         if (empty($errors)) {
-            wp_send_json_success('All files deleted');
+            wp_send_json_success('All files deleted successfully.');
         } else {
             wp_send_json_error('Failed to delete files: ' . implode(', ', $errors));
         }
     }
+    
+    
+    
     public function add_menu_item() {
         add_menu_page(
             'Audio Diary',         // عنوان صفحه
@@ -203,7 +223,7 @@ public function save_audio() {
     $uploads = wp_upload_dir();
     $upload_path = $uploads['basedir'] . '/audio-diary/';
 
-    $date_time = date('Y-m-d H-i-s');
+    $date_time = date('Y-m-d-H-i-s');
     $file_name = 'memory-' . $date_time . '.wav';
     $file_path = $upload_path . $file_name;
 
