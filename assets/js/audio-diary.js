@@ -350,4 +350,35 @@ jQuery(document).ready(function($) {
             });
         }
     });
+
+    $('button#audioduration').on('click', function() {
+        var $button = $(this);
+        var audioUrl = $button.closest('td').find('.audio-duration').data('url');
+
+        if (!audioUrl) {
+            $button.text('خطا');
+            return;
+        }
+
+        var audio = new Audio(audioUrl);
+
+        audio.addEventListener('canplaythrough', function() {
+            var duration = audio.duration;
+
+            if (isNaN(duration) || duration <= 0) {
+                $button.text('خطا');
+                return;
+            }
+
+            var minutes = Math.floor(duration / 60);
+            var seconds = Math.floor(duration % 60);
+            var formattedDuration = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+
+            $button.text(formattedDuration);
+        });
+
+        audio.addEventListener('error', function() {
+            $button.text('خطا');
+        });
+    });
 });

@@ -24,7 +24,7 @@ usort($audio_files, function($a, $b) {
                 <th><?php _e('Date', 'audio-diary'); ?></th>
                 <th><?php _e('Time', 'audio-diary'); ?></th>
                 <th><?php _e('Audio', 'audio-diary'); ?></th>
-                <th><?php _e('Delete', 'audio-diary'); ?></th>
+                <th><?php _e('Duration', 'audio-diary'); ?></th> <!-- ستون جدید برای مدت زمان -->
             </tr>
         </thead>
         <tbody>
@@ -42,8 +42,8 @@ usort($audio_files, function($a, $b) {
                     <audio controls src="<?php echo $file_url; ?>"></audio>
                 </td>
                 <td>
-                    <button class="delete-audio"
-                        data-file="<?php echo $file_name; ?>"><?php _e('Delete', 'audio-diary'); ?></button>
+                    <span class="audio-duration" data-url="<?php echo $file_url; ?>"><button
+                            id="audioduration">calculate</button></span>
                 </td>
             </tr>
             <?php endforeach; ?>

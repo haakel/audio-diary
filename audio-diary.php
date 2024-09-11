@@ -3,6 +3,7 @@
 Plugin Name: Audio diary
 Description: پلاگین دفترچه خاطرات.
 Author: haakel
+Version: 1.0.0
 */
 
 if ( ! defined( 'ABSPATH' ) ) {
