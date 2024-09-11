@@ -132,10 +132,6 @@ class Audio_Diary_Admin_Page {
     
         foreach ($_POST['files'] as $file_name) {
             $file_name = sanitize_file_name($file_name);
-    
-            // اصلاح نام فایل، جایگزین کردن فاصله با خط تیره
-            $file_name = str_replace(' ', '-', $file_name);
-    
             $file_path = wp_normalize_path($base_path . $file_name);
     
             error_log("Trying to delete: " . $file_path);
@@ -159,7 +155,6 @@ class Audio_Diary_Admin_Page {
             wp_send_json_error('Failed to delete files: ' . implode(', ', $errors));
         }
     }
-    
     
     
     public function add_menu_item() {
