@@ -1,353 +1,427 @@
-jQuery(document).ready(function($) {
-    let mediaRecorder;
-    let audioChunks = [];
-    let isRecording = false;
-    let audioContext, analyser, dataArray, bufferLength, source;
+jQuery(document).ready(function ($) {
+  let mediaRecorder;
+  let audioChunks = [];
+  let isRecording = false;
+  let audioContext, analyser, dataArray, bufferLength, source;
+  let isVisualizing = false;
 
-    function visualize(stream) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioContext.createAnalyser();
-        source = audioContext.createMediaStreamSource(stream);
-        source.connect(analyser);
-        analyser.fftSize = 2048;
-        bufferLength = analyser.frequencyBinCount;
-        dataArray = new Uint8Array(bufferLength);
+  function visualize(stream) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    source = audioContext.createMediaStreamSource(stream);
+    source.connect(analyser);
+    analyser.fftSize = 2048;
+    bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
 
-        const canvas = document.getElementById('visualizer');
-        const canvasCtx = canvas.getContext('2d');
+    const canvas = document.getElementById("visualizer");
+    const canvasCtx = canvas.getContext("2d");
 
-        function draw() {
-            requestAnimationFrame(draw);
-            analyser.getByteTimeDomainData(dataArray);
+    function draw() {
+      if (!isVisualizing) return;
+      requestAnimationFrame(draw);
+      analyser.getByteTimeDomainData(dataArray);
 
-            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+      canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 
-            const centerY = canvas.height / 2;
-            canvasCtx.beginPath();
-            canvasCtx.moveTo(0, centerY);
-            canvasCtx.lineTo(canvas.width, centerY);
-            canvasCtx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-            canvasCtx.lineWidth = 1;
-            canvasCtx.stroke();
+      const centerY = canvas.height / 2;
+      canvasCtx.beginPath();
+      canvasCtx.moveTo(0, centerY);
+      canvasCtx.lineTo(canvas.width, centerY);
+      canvasCtx.strokeStyle = "rgba(0, 0, 0, 0.2)";
+      canvasCtx.lineWidth = 1;
+      canvasCtx.stroke();
 
-            canvasCtx.lineWidth = 2;
-            canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+      canvasCtx.lineWidth = 2;
+      canvasCtx.strokeStyle = "rgb(0, 0, 0)";
 
-            canvasCtx.beginPath();
-            let sliceWidth = canvas.width * 1.0 / bufferLength;
-            let x = 0;
+      canvasCtx.beginPath();
+      let sliceWidth = (canvas.width * 1.0) / bufferLength;
+      let x = 0;
 
-            for (let i = 0; i < bufferLength; i++) {
-                let v = dataArray[i] / 128.0;
-                let y = v * canvas.height / 2;
+      for (let i = 0; i < bufferLength; i++) {
+        let v = dataArray[i] / 128.0;
+        let y = (v * canvas.height) / 2;
 
-                if (i === 0) {
-                    canvasCtx.moveTo(x, y);
-                } else {
-                    canvasCtx.lineTo(x, y);
-                }
-
-                x += sliceWidth;
-            }
-
-            canvasCtx.lineTo(canvas.width, canvas.height / 2);
-            canvasCtx.stroke();
+        if (i === 0) {
+          canvasCtx.moveTo(x, y);
+        } else {
+          canvasCtx.lineTo(x, y);
         }
 
-        draw();
+        x += sliceWidth;
+      }
+
+      canvasCtx.lineTo(canvas.width, canvas.height / 2);
+      canvasCtx.stroke();
     }
 
-        
-        $('#download-zip').on('click', function() {
-        var selectedFiles = [];
-        $('.select-audio:checked').each(function() {
-            selectedFiles.push($(this).val());
-        });
+    isVisualizing = true;
+    draw();
+  }
 
-        if (selectedFiles.length > 0) {
-            var form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '';
+  function showToast(message, type) {
+    $.toast({
+      text: message,
+      heading: "Note",
+      icon: type,
+      showHideTransition: "fade",
+      allowToastClose: true,
+      hideAfter: 3000,
+      stack: 3,
+      position: "bottom-center",
+      textAlign: "left",
+      loader: true,
+      loaderBg: type === "success" ? "#9EC600" : "#FF0000",
+    });
+  }
 
-            selectedFiles.forEach(function(file) {
-                var input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'selected_files[]';
-                input.value = file;
-                form.appendChild(input);
-            });
+  $(".download-single").on("click", function () {
+    var $button = $(this);
+    var fileUrl = $button.data("url");
+    var fileName = $button.data("name");
 
-            document.body.appendChild(form);
-            form.submit();
-        } else {
-            $.toast({
-                text: "Please select at least one audio file to download.",
-                heading: 'Note',
-                icon: 'error',
-                showHideTransition: 'fade',
-                allowToastClose: true,
-                hideAfter: 3000,
-                stack: 3,
-                position: 'bottom-center',
-                textAlign: 'left',
-                loader: true,
-                loaderBg: '#FF0000',
-            });
-        }
+    var downloadLink = document.createElement("a");
+    downloadLink.href = fileUrl;
+    downloadLink.download = fileName;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  });
+
+  $("#download-zip").on("click", function () {
+    var selectedFiles = [];
+    $(".select-audio:checked").each(function () {
+      selectedFiles.push($(this).val());
     });
 
+    if (selectedFiles.length > 0) {
+      $.ajax({
+        url: ajaxurl,
+        type: "POST",
+        data: {
+          action: "download_zip",
+          files: selectedFiles,
+        },
+        success: function (response) {
+          if (response.success) {
+            showToast("Zip file created successfully", "success");
+            var downloadLink = document.createElement("a");
+            downloadLink.href = response.data.zip_url;
+            downloadLink.download = response.data.zip_url.split("/").pop();
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            $(".select-audio").prop("checked", false);
+          } else {
+            showToast("Failed to create zip file: " + response.data, "error");
+          }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          showToast("AJAX Error: " + textStatus + ": " + errorThrown, "error");
+        },
+      });
+    } else {
+      showToast("Please select at least one audio file to download.", "error");
+    }
+  });
 
+  $("#recording-button").on("click", function () {
+    if (!isRecording) {
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+          mediaRecorder.start();
+          visualize(stream);
 
-    $('#recording-button').on('click', function() {
-        if (!isRecording) {
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(stream => {
-                    mediaRecorder = new MediaRecorder(stream);
-                    mediaRecorder.start();
-                    visualize(stream);
-                    
-                    mediaRecorder.ondataavailable = function(event) {
-                        audioChunks.push(event.data);
-                    };
+          mediaRecorder.ondataavailable = function (event) {
+            audioChunks.push(event.data);
+          };
 
-                    mediaRecorder.onstop = function() {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                        audioChunks = [];
-                        const audioUrl = URL.createObjectURL(audioBlob);
-                        $('#audio-player').attr('src', audioUrl).addClass('show');
+          mediaRecorder.onstop = function () {
+            stream.getTracks().forEach((track) => track.stop());
+            const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+            audioChunks = [];
+            const audioUrl = URL.createObjectURL(audioBlob);
+            $("#audio-player").attr("src", audioUrl).addClass("show");
 
-                        let formData = new FormData();
-                        formData.append('audio_data', audioBlob, 'audio.wav');
-                        formData.append('action', 'save_audio');
+            let formData = new FormData();
+            formData.append("audio_data", audioBlob, "audio.wav");
+            formData.append("action", "save_audio");
 
-                        $.ajax({
-                            url: ajaxurl,
-                            type: 'POST',
-                            data: formData,
-                            processData: false,
-                            contentType: false,
-                            success: function(response) {
-                                if (response.success) {
-                                    $.toast({
-                                        text: "Audio saved successfully",
-                                        heading: 'Note',
-                                        icon: 'success',
-                                        showHideTransition: 'fade',
-                                        allowToastClose: true,
-                                        hideAfter: 3000,
-                                        stack: 3,
-                                        position: 'bottom-center',
-                                        textAlign: 'left',
-                                        loader: true,
-                                        loaderBg: '#9EC600',
-                                    });
-                                } else {
-                                    $.toast({
-                                        text: "Failed to save audio",
-                                        heading: 'Note',
-                                        icon: 'error',
-                                        showHideTransition: 'fade',
-                                        allowToastClose: true,
-                                        hideAfter: 3000,
-                                        stack: 3,
-                                        position: 'bottom-center',
-                                        textAlign: 'left',
-                                        loader: true,
-                                        loaderBg: '#9EC600',
-                                    });
-                                }
-                            }
-                        });
-                    };
-
-                    $('#visualizer').show();
-                    isRecording = true;
-                    $('#recording-button').css('background-color', 'green');
-                });
-        } else {
-            mediaRecorder.stop();
-            $('#visualizer').hide();
-            isRecording = false;
-            $('#recording-button').css('background-color', 'red');
-        }
-    });
-
-    $('#download-selected').on('click', function() {
-        let selectedFiles = [];
-        $('.select-audio:checked').each(function() {
-            selectedFiles.push($(this).val());
-        });
-    
-        if (selectedFiles.length > 0) {
             $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'download_zip',
-                    files: selectedFiles
-                },
-                success: function(response) {
-                    if (response.success) {
-                        $.toast({
-                            text: "Zip file created successfully",
-                            heading: 'Note',
-                            icon: 'success',
-                            showHideTransition: 'fade',
-                            allowToastClose: true,
-                            hideAfter: 3000,
-                            stack: 3,
-                            position: 'bottom-center',
-                            textAlign: 'left',
-                            loader: true,
-                            loaderBg: '#9EC600',
-                        });
-    
-                        // ایجاد لینک دانلود
-                        let downloadLink = document.createElement('a');
-                        downloadLink.href = response.data.zip_url;
-                        downloadLink.download = response.data.zip_url.split('/').pop();
-                        document.body.appendChild(downloadLink);
-                        downloadLink.click();
-                        document.body.removeChild(downloadLink);
-    
-                        // برداشتن انتخاب فایل‌های صوتی
-                        $('.select-audio').prop('checked', false);
-                    } else {
-                        $.toast({
-                            text: "Failed to create zip file: " + response.data,
-                            heading: 'Error',
-                            icon: 'error',
-                            showHideTransition: 'fade',
-                            allowToastClose: true,
-                            hideAfter: 3000,
-                            stack: 3,
-                            position: 'bottom-center',
-                            textAlign: 'left',
-                            loader: true,
-                            loaderBg: '#FF0000',
-                        });
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.log('AJAX Error: ' + textStatus + ': ' + errorThrown);
-                    $.toast({
-                        text: "AJAX Error: " + textStatus + ": " + errorThrown,
-                        heading: 'Error',
-                        icon: 'error',
-                        showHideTransition: 'fade',
-                        allowToastClose: true,
-                        hideAfter: 3000,
-                        stack: 3,
-                        position: 'bottom-center',
-                        textAlign: 'left',
-                        loader: true,
-                        loaderBg: '#FF0000',
-                    });
+              url: ajaxurl,
+              type: "POST",
+              data: formData,
+              processData: false,
+              contentType: false,
+              success: function (response) {
+                if (response.success) {
+                  showToast("Audio saved successfully", "success");
+                } else {
+                  showToast("Failed to save audio", "error");
                 }
+              },
             });
-        }
+          };
+
+          $("#visualizer").show();
+          isRecording = true;
+          $("#recording-button").css("background-color", "green");
+        })
+        .catch((error) => {
+          showToast("Unable to access microphone: " + error.message, "error");
+        });
+    } else {
+      mediaRecorder.stop();
+      $("#visualizer").hide();
+      isVisualizing = false;
+      audioContext.close();
+      isRecording = false;
+      $("#recording-button").css("background-color", "red");
+    }
+  });
+
+  $("#download-selected").on("click", function () {
+    let selectedFiles = [];
+    $(".select-audio:checked").each(function () {
+      selectedFiles.push($(this).val());
     });
 
-    $('#select-all').on('click', function() {
-        let isSelectAll = $(this).data('select-all');
-        
-        if (isSelectAll) {
-            $('.select-audio').prop('checked', true);
-            $(this).text('Unselect All');
-        } else {
-            $('.select-audio').prop('checked', false);
-            $(this).text('Select All');
-        }
-        
-        // تغییر حالت دکمه
-        $(this).data('select-all', !isSelectAll);
+    if (selectedFiles.length > 0) {
+      $.ajax({
+        url: ajaxurl,
+        type: "POST",
+        data: {
+          action: "download_zip",
+          files: selectedFiles,
+        },
+        success: function (response) {
+          if (response.success) {
+            showToast("Zip file created successfully", "success");
+            let downloadLink = document.createElement("a");
+            downloadLink.href = response.data.zip_url;
+            downloadLink.download = response.data.zip_url.split("/").pop();
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            $(".select-audio").prop("checked", false);
+          } else {
+            showToast("Failed to create zip file: " + response.data, "error");
+          }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          showToast("AJAX Error: " + textStatus + ": " + errorThrown, "error");
+        },
+      });
+    }
+  });
+
+  $("#select-all").on("click", function () {
+    let isSelectAll = $(this).data("select-all");
+    if (isSelectAll) {
+      $(".select-audio").prop("checked", true);
+      $(this).text("Unselect All");
+    } else {
+      $(".select-audio").prop("checked", false);
+      $(this).text("Select All");
+    }
+    $(this).data("select-all", !isSelectAll);
+  });
+
+  // فقط یه رویداد برای #delete-selected
+  $("#delete-selected").on("click", function () {
+    const selectedFiles = [];
+    $(".select-audio:checked").each(function () {
+      selectedFiles.push($(this).val());
     });
-    
-    
-    // حذف فایل‌های انتخاب‌شده
-    $('#delete-selected').on('click', function() {
-        let selectedFiles = [];
-        $('.select-audio:checked').each(function() {
-            selectedFiles.push($(this).val());
-        });
-    
-        if (selectedFiles.length > 0 && confirm("Are you sure you want to delete selected audio files?")) {
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'delete_selected_audios',
-                    files: selectedFiles
-                },
-                success: function(response) {
-                    if (response.success) {
-                        $.toast({
-                            text: "Selected audio files deleted successfully",
-                            heading: 'Note',
-                            icon: 'success',
-                            showHideTransition: 'fade',
-                            allowToastClose: true,
-                            hideAfter: 3000,
-                            stack: 3,
-                            position: 'bottom-center',
-                            textAlign: 'left',
-                            loader: true,
-                            loaderBg: '#9EC600',
-                        });
-    
-                        // پس از حذف موفق فایل‌ها، لیست را به‌روزرسانی کنید
-                        selectedFiles.forEach(function(fileName) {
-                            $('.delete-audio[data-file="' + fileName + '"]').closest('tr').fadeOut(400, function() {
-                                $(this).remove();
-                            });
-                        });
-                    } else {
-                        $.toast({
-                            text: "Failed to delete selected audio files: " + response.data,
-                            heading: 'Error',
-                            icon: 'error',
-                            showHideTransition: 'fade',
-                            allowToastClose: true,
-                            hideAfter: 3000,
-                            stack: 3,
-                            position: 'bottom-center',
-                            textAlign: 'left',
-                            loader: true,
-                            loaderBg: '#FF0000',
-                        });
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.log('AJAX Error: ' + textStatus + ': ' + errorThrown);
-                    $.toast({
-                        text: "AJAX Error: " + textStatus + ": " + errorThrown,
-                        heading: 'Error',
-                        icon: 'error',
-                        showHideTransition: 'fade',
-                        allowToastClose: true,
-                        hideAfter: 3000,
-                        stack: 3,
-                        position: 'bottom-center',
-                        textAlign: 'left',
-                        loader: true,
-                        loaderBg: '#FF0000',
-                    });
-                }
+
+    if (selectedFiles.length === 0) {
+      showToast("Please select at least one audio file to delete.", "error");
+      return;
+    }
+
+    const confirmDialog = confirm(
+      "Are you sure you want to delete " +
+        selectedFiles.length +
+        " selected file(s)?\nPress OK to delete only locally, or Cancel and choose below."
+    );
+    if (!confirmDialog) {
+      const deleteFromDrive = confirm(
+        "Also delete these files from Google Drive?"
+      );
+      deleteFiles(selectedFiles, deleteFromDrive);
+    } else {
+      deleteFiles(selectedFiles, false);
+    }
+  });
+
+  function deleteFiles(files, deleteFromDrive) {
+    $.ajax({
+      url: ajaxurl,
+      type: "POST",
+      data: {
+        action: "audio_diary_delete_selected_audios",
+        files: files,
+        delete_from_drive: deleteFromDrive,
+      },
+      success: function (response) {
+        if (response.success) {
+          showToast(
+            "Deleted " +
+              (response.deleted_local || 0) +
+              " local file(s) and " +
+              (response.deleted_drive || 0) +
+              " Google Drive file(s) successfully!",
+            "success"
+          );
+          files.forEach(function (fileName) {
+            const $row = $('tr[data-file="' + fileName + '"]');
+            $row
+              .find(".upload-to-drive")
+              .text("Upload to Drive")
+              .removeClass("uploaded")
+              .prop("disabled", false);
+            $row.fadeOut(400, function () {
+              $(this).remove();
             });
+          });
+          if (response.data && response.data.drive_errors) {
+            showToast(response.data.drive_errors, "warning");
+          }
         } else {
-            $.toast({
-                text: "Please select at least one audio file to delete.",
-                heading: 'Error',
-                icon: 'error',
-                showHideTransition: 'fade',
-                allowToastClose: true,
-                hideAfter: 3000,
-                stack: 3,
-                position: 'bottom-center',
-                textAlign: 'left',
-                loader: true,
-                loaderBg: '#FF0000',
-            });
+          showToast(
+            "Failed to delete files: " + (response.data || "Unknown error"),
+            "error"
+          );
         }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        showToast("AJAX Error: " + textStatus + " - " + errorThrown, "error");
+      },
     });
+  }
+
+  $(".upload-to-drive").on("click", function () {
+    const $button = $(this);
+    const fileName = $button.data("name");
+
+    if ($button.hasClass("uploaded")) {
+      showToast("This file is already uploaded to Google Drive.", "error");
+      return;
+    }
+
+    $button.text("Uploading...").prop("disabled", true);
+
+    $.ajax({
+      url: ajaxurl,
+      type: "POST",
+      data: {
+        action: "upload_to_google_drive",
+        file: fileName,
+      },
+      success: function (response) {
+        if (response.success) {
+          showToast("File uploaded to Google Drive successfully!", "success");
+          $button.text("Uploaded").addClass("uploaded").prop("disabled", true);
+        } else {
+          if (response.data === "File already exists in Google Drive.") {
+            showToast("This file already exists in Google Drive.", "error");
+            $button
+              .text("Uploaded")
+              .addClass("uploaded")
+              .prop("disabled", true);
+          } else {
+            showToast("Failed to upload: " + response.data, "error");
+            $button.text("Upload to Drive").prop("disabled", false);
+          }
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        showToast("Upload Error: " + textStatus, "error");
+        $button.text("Upload to Drive").prop("disabled", false);
+      },
+    });
+  });
+
+  $("button#audioduration").on("click", function () {
+    var $button = $(this);
+    if ($button.data("loaded")) return;
+    var audioUrl = $button.closest("td").find(".audio-duration").data("url");
+
+    if (!audioUrl) {
+      $button.text("خطا");
+      return;
+    }
+
+    $button.text("در حال بارگذاری...");
+    var audio = new Audio(audioUrl);
+
+    audio.addEventListener("canplaythrough", function () {
+      var duration = audio.duration;
+
+      if (isNaN(duration) || duration <= 0) {
+        $button.text("خطا");
+        return;
+      }
+
+      var minutes = Math.floor(duration / 60);
+      var seconds = Math.floor(duration % 60);
+      var formattedDuration =
+        minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+
+      $button.text(formattedDuration);
+      $button.data("loaded", true);
+    });
+
+    audio.addEventListener("error", function () {
+      $button.text("خطا");
+    });
+
+    audio.load();
+  });
+
+  $("button.audioduration").on("click", function () {
+    var $button = $(this);
+    if ($button.data("loaded")) return;
+
+    var audioUrl = $button.closest("td").find(".audio-duration").data("url");
+    if (!audioUrl) {
+      $button.text("خطا");
+      return;
+    }
+
+    $button.text("در حال بارگذاری...");
+    var audio = new Audio(audioUrl);
+
+    audio.addEventListener("canplaythrough", function () {
+      var duration = audio.duration;
+
+      if (isNaN(duration) || duration <= 0) {
+        $button.text("خطا");
+        return;
+      }
+
+      var minutes = Math.floor(duration / 60);
+      var seconds = Math.floor(duration % 60);
+      var formattedDuration =
+        minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+
+      $button.text(formattedDuration);
+      $button.data("loaded", true);
+    });
+
+    audio.addEventListener("error", function () {
+      $button.text("خطا");
+    });
+
+    audio.load();
+  });
+
+  $(".select-audio").on("change", function () {
+    let count = $(".select-audio:checked").length;
+    $("#selected-count").text(`Selected: ${count}`);
+  });
 });

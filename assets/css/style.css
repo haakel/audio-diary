@@ -1,155 +1,270 @@
 .audio-diary-admin-page {
-    max-width: 600px;
-    margin: 0 auto;
-    text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .audio-diary-admin-page body {
-    background-color: #000;
-    color: #fff;
-    font-family: Arial, sans-serif;
+  background-color: #000;
+  color: #fff;
+  font-family: Arial, sans-serif;
 }
 .audio-diary-admin-page #recording-button {
-    background-color: red;
-    color: white;
-    border: none;
-    padding: 20px;
-    font-size: 20px;
-    border-radius: 50%;
-    cursor: pointer;
-    margin-top: 20px;
-    width: 100px;
-    height: 100px;
-    background-image: url('../img/microphone.png'); /* آدرس تصویر میکروفون */
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 50%;
-    display: block;
-    margin: 20px auto; /* برای قرارگیری در وسط صفحه */
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 20px;
+  font-size: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-top: 20px;
+  width: 100px;
+  height: 100px;
+  background-image: url("../img/microphone.png"); /* آدرس تصویر میکروفون */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 50%;
+  display: block;
+  margin: 20px auto; /* برای قرارگیری در وسط صفحه */
 }
 
 .audio-diary-admin-page #visualizer {
-    display: none;
-    margin-top: 20px;
+  display: none;
+  margin-top: 20px;
 }
 
 .audio-diary-admin-page audio {
-    display: none;
-    margin: 20px auto;
-    width: 300px;
+  display: none;
+  margin: 20px auto;
+  width: 300px;
 }
 
 .audio-diary-admin-page audio.show {
-    display: block;
+  display: block;
 }
 
 .audio-diary-admin-page canvas {
-    display: block;
-    margin: 20px auto;
-    border: 2px solid #c5c3c3; /* مثال: خط قرمز دور canvas */
-    border-radius: 10px; /* مثال: گوشه‌های گرد */
-    width: 100%; /* عرض 100% از والد */
-    max-width: 600px; /* حداکثر عرض 600px */
-    height: 100px; /* ارتفاع 100px */
-    background-color: rgba(255, 255, 255, 0.1); /* مثال: زمینه نیمه شفاف سفید */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* سایه برای دادن عمق */
+  display: block;
+  margin: 20px auto;
+  border: 2px solid #c5c3c3; /* مثال: خط قرمز دور canvas */
+  border-radius: 10px; /* مثال: گوشه‌های گرد */
+  width: 100%; /* عرض 100% از والد */
+  max-width: 600px; /* حداکثر عرض 600px */
+  height: 100px; /* ارتفاع 100px */
+  background-color: rgba(255, 255, 255, 0.1); /* مثال: زمینه نیمه شفاف سفید */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* سایه برای دادن عمق */
 }
 
 .audio-diary-admin-list-page #visualizer {
-    background-color: #f9f9f9; /* پس‌زمینه ملایم */
-    border-radius: 8px;
-    border: 1px solid #ccc;
+  background-color: #f9f9f9; /* پس‌زمینه ملایم */
+  border-radius: 8px;
+  border: 1px solid #ccc;
 }
 /* تنظیمات کلی صفحه مدیریت */
 .audio-diary-admin-list-page {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f4f4f9;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #333;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f4f4f9;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
 }
 
 .audio-diary-admin-list-page h1 {
-    color: #333;
-    font-size: 24px;
-    margin-bottom: 20px;
+  color: #333;
+  font-size: 24px;
+  margin-bottom: 20px;
 }
 
 .audio-diary-admin-list-page button {
-    background-color: #0073aa;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 14px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  background-color: #0073aa;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .audio-diary-admin-list-page button:hover {
-    background-color: #005177;
+  background-color: #005177;
 }
 
 .audio-diary-admin-list-page table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
 }
 
 .audio-diary-admin-list-page th,
 .audio-diary-admin-list-page td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
 }
 
 .audio-diary-admin-list-page th {
-    background-color: #0073aa;
-    color: white;
-    font-weight: bold;
+  background-color: #0073aa;
+  color: white;
+  font-weight: bold;
 }
 
 .audio-diary-admin-list-page tr:nth-child(even) {
-    background-color: #f9f9f9;
+  background-color: #f9f9f9;
 }
 
-.audio-diary-admin-li   st-page tr:hover {
-    background-color: #f1f1f1;
+.audio-diary-admin-li st-page tr:hover {
+  background-color: #f1f1f1;
 }
 
 .audio-diary-admin-list-page td audio {
-    display: block;
-    margin: 0 auto;
+  display: block;
+  margin: 0 auto;
 }
 
 /* استایل‌های اضافی برای ورودی‌های چک‌باکس و دکمه حذف */
 .audio-diary-admin-list-page .select-audio {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .audio-diary-admin-list-page .delete-audio {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .audio-diary-admin-list-page .delete-audio:hover {
-    background-color: #c82333;
+  background-color: #c82333;
 }
 
 /* استایل‌های برای فوتر و هدر جدول */
 .audio-diary-admin-list-page thead {
-    border-bottom: 2px solid #0073aa;
+  border-bottom: 2px solid #0073aa;
 }
 
 .audio-diary-admin-list-page tfoot {
-    border-top: 2px solid #0073aa;
-    background-color: #f2f2f2;
+  border-top: 2px solid #0073aa;
+  background-color: #f2f2f2;
+}
+.audio-diary-admin-list-page {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.audio-diary-admin-list-page h1 {
+  font-size: 26px;
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.btn {
+  padding: 10px 20px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: #0073aa;
+  color: white;
+}
+.btn-primary:hover {
+  background-color: #005177;
+}
+.btn-danger {
+  background-color: #e74c3c;
+  color: white;
+}
+.btn-danger:hover {
+  background-color: #c0392b;
+}
+.btn-secondary {
+  background-color: #7f8c8d;
+  color: white;
+}
+.btn-secondary:hover {
+  background-color: #6c757d;
+}
+.btn-small {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btn-upload {
+  background-color: #27ae60;
+  color: white;
+}
+.btn-upload:hover {
+  background-color: #219653;
+}
+.btn-upload.uploaded {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+.selected-count {
+  font-size: 14px;
+  color: #7f8c8d;
+  margin-bottom: 15px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+}
+
+th,
+td {
+  border: 1px solid #e0e0e0;
+  padding: 12px;
+  text-align: center;
+}
+
+th {
+  background-color: #34495e;
+  color: white;
+  font-weight: 600;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+tr:hover {
+  background-color: #f1f1f1;
+}
+
+.action-cell {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+audio {
+  width: 200px;
+}
+
+.select-audio {
+  cursor: pointer;
 }
