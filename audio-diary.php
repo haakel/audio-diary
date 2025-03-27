@@ -3,7 +3,7 @@
 Plugin Name: Audio diary
 Description: پلاگین دفترچه خاطرات.
 Author: haakel
-Version: 2.1.0
+Version: 2.1.1
 */
 
 if (!defined('ABSPATH')) {
@@ -74,11 +74,11 @@ class Audio_diary {
     public function audio_diary_shortcode() {
         ob_start();
         ?>
-<div class="wrap audio-diary-admin-page">
+<div class="audio-diary-container audio-diary-recorder">
     <h1><?php _e('Audio Diary', 'audio-diary'); ?></h1>
-    <button id="recording-button"></button>
-    <audio id="audio-player" controls></audio>
-    <canvas id="visualizer" width="640" height="100"></canvas>
+    <button class="audio-diary-recorder__button" id="recording-button"></button>
+    <audio class="audio-diary-recorder__player" id="audio-player" controls></audio>
+    <canvas class="audio-diary-recorder__visualizer" id="visualizer" width="640" height="100"></canvas>
 </div>
 <?php
         return ob_get_clean();

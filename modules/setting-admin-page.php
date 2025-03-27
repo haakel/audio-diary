@@ -18,20 +18,22 @@ class AudioDiarySettings {
         $folder_info = $this->get_folder_info($folder_id);
         ?>
 
-<div class="wrap audio-diary-settings">
-    <h1><?php _e('Audio Diary Settings', 'audio-diary'); ?></h1>
-    <p class="description"><?php _e('Configure the settings for your Audio Diary plugin below.', 'audio-diary'); ?></p>
+<div class="audio-diary-container audio-diary-settings-panel">
+    <h1 class="audio-diary-settings-panel__title"><?php _e('Audio Diary Settings', 'audio-diary'); ?></h1>
+    <p class="audio-diary-settings-panel__description">
+        <?php _e('Configure the settings for your Audio Diary plugin below.', 'audio-diary'); ?></p>
 
-    <h2 class="nav-tab-wrapper">
+    <h2 class="audio-diary-settings-panel__nav nav-tab-wrapper">
         <a href="#general" class="nav-tab nav-tab-active"><?php _e('General', 'audio-diary'); ?></a>
     </h2>
 
     <form method="post" action="" class="audio-diary-settings-form">
         <?php wp_nonce_field('audio_diary_settings_nonce'); ?>
 
-        <div class="settings-section">
-            <h2><?php _e('Google Drive Settings', 'audio-diary'); ?></h2>
-            <table class="form-table">
+        <div class="audio-diary-settings-panel__section">
+            <h2 class="audio-diary-settings-panel__section-title"><?php _e('Google Drive Settings', 'audio-diary'); ?>
+            </h2>
+            <table class="audio-diary-settings-panel__table form-table">
                 <tr>
                     <th scope="row">
                         <label
@@ -41,19 +43,20 @@ class AudioDiarySettings {
                         <input type="text" id="google_drive_folder_id" name="google_drive_folder_id"
                             value="<?php echo esc_attr($folder_id); ?>" class="regular-text"
                             placeholder="<?php _e('Enter Folder ID', 'audio-diary'); ?>" />
-                        <p class="description">
+                        <p class="audio-diary-settings-panel__description">
                             <?php _e('The ID of the Google Drive folder where audio files are stored.', 'audio-diary'); ?>
                         </p>
                         <button type="button" id="test-connection"
-                            class="button"><?php _e('Test Connection', 'audio-diary'); ?></button>
-                        <span id="connection-status" class="connection-status"></span>
+                            class="audio-diary-settings-panel__test-button"><?php _e('Test Connection', 'audio-diary'); ?></button>
+                        <span id="connection-status" class="audio-diary-settings-panel__status"></span>
                     </td>
                 </tr>
                 <?php if ($folder_info): ?>
                 <tr>
                     <th scope="row"><?php _e('Folder Name', 'audio-diary'); ?></th>
                     <td>
-                        <span class="folder-info"><?php echo esc_html($folder_info['name']); ?></span>
+                        <span
+                            class="audio-diary-settings-panel__folder-info"><?php echo esc_html($folder_info['name']); ?></span>
                     </td>
                 </tr>
                 <tr>
@@ -68,7 +71,7 @@ class AudioDiarySettings {
                     <th scope="row"><?php _e('Folder Status', 'audio-diary'); ?></th>
                     <td>
                         <span
-                            class="error"><?php _e('Folder not found or inaccessible. Verify the Folder ID and ensure it\'s shared with the Service Account.', 'audio-diary'); ?></span>
+                            class="audio-diary-settings-panel__error"><?php _e('Folder not found or inaccessible. Verify the Folder ID and ensure it\'s shared with the Service Account.', 'audio-diary'); ?></span>
                     </td>
                 </tr>
                 <?php endif; ?>
@@ -76,7 +79,7 @@ class AudioDiarySettings {
         </div>
 
         <p class="submit">
-            <input type="submit" name="audio_diary_settings_submit" class="button button-primary"
+            <input type="submit" name="audio_diary_settings_submit" class="audio-diary-settings-panel__button"
                 value="<?php _e('Save Changes', 'audio-diary'); ?>" />
         </p>
     </form>
