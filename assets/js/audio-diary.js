@@ -151,8 +151,14 @@ jQuery(document).ready(function ($) {
             formData.append("audio_data", audioBlob, "audio.wav");
             formData.append("action", "save_audio");
 
+            const ajaxUrl =
+              typeof audio_diary_vars !== "undefined" &&
+              audio_diary_vars.ajaxurl
+                ? audio_diary_vars.ajaxurl
+                : ajaxurl;
+
             $.ajax({
-              url: ajaxurl,
+              url: ajaxUrl,
               type: "POST",
               data: formData,
               processData: false,
@@ -161,12 +167,17 @@ jQuery(document).ready(function ($) {
                 if (response.success) {
                   showToast("Audio saved successfully", "success");
                 } else {
-                  showToast("Failed to save audio", "error");
+                  showToast("Failed to save audio: " + response.data, "error");
                 }
+              },
+              error: function (jqXHR, textStatus, errorThrown) {
+                showToast(
+                  "AJAX Error: " + textStatus + " - " + errorThrown,
+                  "error"
+                );
               },
             });
           };
-
           $("#visualizer").show();
           isRecording = true;
           $("#recording-button").css("background-color", "green");

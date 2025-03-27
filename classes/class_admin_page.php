@@ -14,9 +14,10 @@ class Audio_Diary_Admin_Page {
     public function __construct() {
         add_action('admin_menu', array($this, 'add_menu_item'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
-        add_action('wp_ajax_save_audio', array($this, 'save_audio'));
+        add_action('wp_ajax_save_audio', array($this, 'save_audio')); 
+        add_action('wp_ajax_nopriv_save_audio', array($this, 'save_audio')); 
         add_action('wp_ajax_delete_audio', array($this, 'delete_audio'));
-        add_action('wp_ajax_delete_selected_audios', array($this, 'delete_selected_audios')); // نگه داشتم برای سازگاری
+        add_action('wp_ajax_delete_selected_audios', array($this, 'delete_selected_audios'));
         add_action('wp_ajax_download_zip', array($this, 'handle_download_zip'));
         add_action('wp_ajax_upload_to_google_drive', array($this, 'audio_diary_upload_to_google_drive'));
         add_action('wp_ajax_audio_diary_delete_selected_audios', array($this, 'audio_diary_delete_selected_audios'));
@@ -324,10 +325,10 @@ class Audio_Diary_Admin_Page {
     }
 
     public function save_audio() {
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error('Unauthorized');
-            return;
-        }
+        // if (!current_user_can('manage_options')) {
+        //     wp_send_json_error('Unauthorized');
+        //     return;
+        // }
 
         if (empty($_FILES['audio_data'])) {
             wp_send_json_error('No file uploaded');
