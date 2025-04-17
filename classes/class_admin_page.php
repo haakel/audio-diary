@@ -22,6 +22,7 @@ class Audio_Diary_Admin_Page {
         add_action('wp_ajax_upload_to_google_drive', array($this, 'audio_diary_upload_to_google_drive'));
         add_action('wp_ajax_audio_diary_delete_selected_audios', array($this, 'audio_diary_delete_selected_audios'));
         add_action('wp_ajax_audio_diary_test_connection', array($this, 'test_connection'));
+        add_action('wp_ajax_audio_diary_get_updated_files', [$this, 'get_updated_files']);
         $this->create_audio_folder();
     }
 
@@ -193,6 +194,61 @@ class Audio_Diary_Admin_Page {
             }
         }
     }
+    public function get_updated_files() {
+        // لود فایل jdf.php با مسیر مطلق
+        $jdf_path = plugin_dir_path(__DIR__) . '/modules/jdf.php';
+        if (file_exists($jdf_path)) {
+            include_once $jdf_path;
+        } else {
+            wp_send_json_error('File jdf.php not found.');
+            return;
+        }
+
+        $uploads = wp_upload_dir();
+        $audio_files = glob($uploads['basedir'] . '/audio-diary/*.wav');
+        if (!is_array($audio_files)) {
+            $audio_files = [];
+        }
+        usort($audio_files, function($a, $b) {
+            return filemtime($b) - filemtime($a);
+        });
+
+        // تنظیمات صفحه‌بندی
+        $per_page = 10;
+        $total_files = count($audio_files);
+        $total_pages = max(1, ceil($total_files / $per_page));
+        $current_page = isset($_POST['paged']) ? max(1, intval($_POST['paged'])) : 1;
+
+        // اگر صفحه جاری بزرگ‌تر از تعداد صفحات باشد، به آخرین صفحه تغییر کند
+        if ($current_page > $total_pages) {
+            $current_page = $total_pages;
+        }
+
+        $offset = ($current_page - 1) * $per_page;
+        $paged_files = array_slice($audio_files, $offset, $per_page);
+
+        // آماده‌سازی داده‌ها برای پاسخ
+        $files_data = [];
+        foreach ($paged_files as $file) {
+            $file_date = jdate("Y-m-d", filemtime($file));
+            $file_time = jdate("H:i:s", filemtime($file));
+            $file_url = $uploads['baseurl'] . '/audio-diary/' . basename($file);
+            $file_name = basename($file);
+            $files_data[] = [
+                'file_date' => esc_html($file_date),
+                'file_time' => esc_html($file_time),
+                'file_url' => esc_url($file_url),
+                'file_name' => esc_attr($file_name),
+            ];
+        }
+
+        wp_send_json_success([
+            'files' => $files_data,
+            'total_files' => $total_files,
+            'total_pages' => $total_pages,
+            'current_page' => $current_page,
+        ]);
+    }
 
     function handle_download_zip() {
         $files = isset($_POST['files']) ? (array)$_POST['files'] : [];
@@ -244,27 +300,28 @@ class Audio_Diary_Admin_Page {
         }
     }
 
-    function delete_selected_audios() {
-        $files = isset($_POST['files']) ? (array)$_POST['files'] : [];
-        if (empty($files)) {
-            wp_send_json_error('No files selected.');
-        }
-
-        $uploads = wp_upload_dir();
-        $deleted = 0;
+    public function delete_selected_audios() {
+        $files = isset($_POST['files']) ? (array) $_POST['files'] : [];
+        $delete_from_drive = isset($_POST['delete_from_drive']) && $_POST['delete_from_drive'] === 'true';
+        $deleted_local = 0;
+        $deleted_drive = 0;
+        $drive_errors = '';
 
         foreach ($files as $file) {
+            $uploads = wp_upload_dir();
             $file_path = $uploads['basedir'] . '/audio-diary/' . sanitize_file_name($file);
-            if (file_exists($file_path) && unlink($file_path)) {
-                $deleted++;
+            if (file_exists($file_path)) {
+                unlink($file_path);
+                $deleted_local++;
             }
+            // منطق حذف از Google Drive (در صورت وجود)
         }
 
-        if ($deleted > 0) {
-            wp_send_json_success('Deleted ' . $deleted . ' files.');
-        } else {
-            wp_send_json_error('Failed to delete files.');
-        }
+        wp_send_json_success([
+            'deleted_local' => $deleted_local,
+            'deleted_drive' => $deleted_drive,
+            'drive_errors' => $drive_errors
+        ]);
     }
 
     public function add_menu_item() {

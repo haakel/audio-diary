@@ -76,6 +76,194 @@ jQuery(document).ready(function ($) {
     });
   }
 
+  function updateSelectedCount() {
+    let count = $(".select-audio:checked").length;
+    $("#selected-count").text(`Selected: ${count}`);
+  }
+
+  function updateTableAndPagination(data) {
+    const $tableBody = $("#audio-table tbody");
+    const $pagination = $(".audio-diary-list__pagination");
+    const currentPage = parseInt(data.current_page) || 1;
+    const totalPages = parseInt(data.total_pages) || 1;
+    const totalFiles = parseInt(data.total_files) || 0;
+
+    // به‌روزرسانی جدول
+    $tableBody.empty();
+    if (data.files && data.files.length > 0) {
+      data.files.forEach((file) => {
+        const fileDate = file.file_date;
+        const fileTime = file.file_time;
+        const fileUrl = file.file_url;
+        const fileName = file.file_name;
+        $tableBody.append(`
+          <tr data-file="${fileName}">
+            <td><input type="checkbox" class="audio-diary-list__checkbox select-audio" value="${fileName}"></td>
+            <td>${fileDate}</td>
+            <td>${fileTime}</td>
+            <td><audio class="audio-diary-list__audio" controls src="${fileUrl}"></audio></td>
+            <td class="audio-diary-list__actions-cell">
+              <button class="audio-diary-list__button audio-diary-list__button--small btn-download download-single" 
+                      data-url="${fileUrl}" data-name="${fileName}">Download</button>
+              <button class="audio-diary-list__button audio-diary-list__button--small audio-diary-list__button--upload upload-to-drive" 
+                      data-name="${fileName}">Upload to Drive</button>
+            </td>
+          </tr>
+        `);
+      });
+    } else {
+      $tableBody.append('<tr><td colspan="5">No audio files found.</td></tr>');
+    }
+
+    // به‌روزرسانی ویژگی data-total-files
+    $("#audio-table")
+      .data("total-files", totalFiles)
+      .attr("data-total-files", totalFiles);
+
+    // به‌روزرسانی صفحه‌بندی
+    $pagination.empty();
+    if (totalPages <= 1) {
+      $pagination.hide();
+    } else {
+      const baseUrl = window.location.pathname + "?page=audio-diary-list";
+
+      // لینک "قبلی"
+      if (currentPage > 1) {
+        $pagination.append(
+          `<a href="#" class="audio-diary-list__pagination-link audio-diary-list__pagination-link--prev" data-page="${
+            currentPage - 1
+          }">Previous</a>`
+        );
+      }
+
+      // لینک‌های شماره صفحه
+      for (let i = 1; i <= totalPages; i++) {
+        const activeClass =
+          i === currentPage ? "audio-diary-list__pagination-link--active" : "";
+        $pagination.append(
+          `<a href="#" class="audio-diary-list__pagination-link ${activeClass}" data-page="${i}">${i}</a>`
+        );
+      }
+
+      // لینک "بعدی"
+      if (currentPage < totalPages) {
+        $pagination.append(
+          `<a href="#" class="audio-diary-list__pagination-link audio-diary-list__pagination-link--next" data-page="${
+            currentPage + 1
+          }">Next</a>`
+        );
+      }
+
+      $pagination.show();
+    }
+
+    // اتصال رویدادهای کلیک به لینک‌های صفحه‌بندی
+    $(".audio-diary-list__pagination-link").on("click", function (e) {
+      e.preventDefault();
+      const page = $(this).data("page");
+      fetchUpdatedFiles(page);
+      // به‌روزرسانی URL بدون رفرش
+      const newUrl = page > 1 ? `${baseUrl}&paged=${page}` : baseUrl;
+      history.pushState({}, "", newUrl);
+    });
+
+    // اتصال رویدادها به عناصر جدید
+    $(".download-single").on("click", function () {
+      const $button = $(this);
+      const fileUrl = $button.data("url");
+      const fileName = $button.data("name");
+      const downloadLink = document.createElement("a");
+      downloadLink.href = fileUrl;
+      downloadLink.download = fileName;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    });
+
+    $(".upload-to-drive").on("click", function () {
+      const $button = $(this);
+      const fileName = $button.data("name");
+      if ($button.hasClass("uploaded")) {
+        showToast("This file is already uploaded to Google Drive.", "error");
+        return;
+      }
+      $button.text("Uploading...").prop("disabled", true);
+      $.ajax({
+        url: ajaxurl,
+        type: "POST",
+        data: {
+          action: "upload_to_google_drive",
+          file: fileName,
+        },
+        success: function (response) {
+          if (response.success) {
+            showToast("File uploaded to Google Drive successfully!", "success");
+            $button
+              .text("Uploaded")
+              .addClass("uploaded")
+              .prop("disabled", true);
+          } else {
+            if (response.data === "File already exists in Google Drive.") {
+              showToast("This file already exists in Google Drive.", "error");
+              $button
+                .text("Uploaded")
+                .addClass("uploaded")
+                .prop("disabled", true);
+            } else {
+              showToast("Failed to upload: " + response.data, "error");
+              $button.text("Upload to Drive").prop("disabled", false);
+            }
+          }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          showToast("Upload Error: " + textStatus, "error");
+          $button.text("Upload to Drive").prop("disabled", false);
+        },
+      });
+    });
+
+    // بازنشانی چک‌باکس‌ها و به‌روزرسانی تعداد انتخاب‌شده‌ها
+    $(".select-audio").prop("checked", false);
+    updateSelectedCount();
+  }
+
+  function fetchUpdatedFiles(page) {
+    const currentPage =
+      page || new URLSearchParams(window.location.search).get("paged") || 1;
+    $.ajax({
+      url: ajaxurl,
+      type: "POST",
+      data: {
+        action: "audio_diary_get_updated_files",
+        paged: currentPage,
+      },
+      success: function (response) {
+        if (response.success) {
+          updateTableAndPagination(response.data);
+        } else {
+          showToast(
+            "Failed to fetch updated files: " +
+              (response.data || "Unknown error"),
+            "error"
+          );
+          // فال‌بک: نمایش پیام در جدول
+          $("#audio-table tbody").html(
+            '<tr><td colspan="5">Error loading files. Please try again.</td></tr>'
+          );
+          $(".audio-diary-list__pagination").hide();
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        showToast("AJAX Error: " + textStatus + " - " + errorThrown, "error");
+        // فال‌بک: نمایش پیام در جدول
+        $("#audio-table tbody").html(
+          '<tr><td colspan="5">Error loading files. Please try again.</td></tr>'
+        );
+        $(".audio-diary-list__pagination").hide();
+      },
+    });
+  }
+
   $(".download-single").on("click", function () {
     var $button = $(this);
     var fileUrl = $button.data("url");
@@ -113,6 +301,7 @@ jQuery(document).ready(function ($) {
             downloadLink.click();
             document.body.removeChild(downloadLink);
             $(".select-audio").prop("checked", false);
+            updateSelectedCount();
           } else {
             showToast("Failed to create zip file: " + response.data, "error");
           }
@@ -166,6 +355,7 @@ jQuery(document).ready(function ($) {
               success: function (response) {
                 if (response.success) {
                   showToast("Audio saved successfully", "success");
+                  fetchUpdatedFiles(); // به‌روزرسانی جدول پس از ضبط جدید
                 } else {
                   showToast("Failed to save audio: " + response.data, "error");
                 }
@@ -219,6 +409,7 @@ jQuery(document).ready(function ($) {
             downloadLink.click();
             document.body.removeChild(downloadLink);
             $(".select-audio").prop("checked", false);
+            updateSelectedCount();
           } else {
             showToast("Failed to create zip file: " + response.data, "error");
           }
@@ -240,9 +431,9 @@ jQuery(document).ready(function ($) {
       $(this).text("Select All");
     }
     $(this).data("select-all", !isSelectAll);
+    updateSelectedCount();
   });
 
-  // فقط یه رویداد برای #delete-selected
   $("#delete-selected").on("click", function () {
     const selectedFiles = [];
     $(".select-audio:checked").each(function () {
@@ -282,24 +473,19 @@ jQuery(document).ready(function ($) {
         if (response.success) {
           showToast(
             "Deleted " +
-              (response.deleted_local || 0) +
+              (response.data?.deleted_local || 0) +
               " local file(s) and " +
-              (response.deleted_drive || 0) +
+              (response.data?.deleted_drive || 0) +
               " Google Drive file(s) successfully!",
             "success"
           );
-          files.forEach(function (fileName) {
-            const $row = $('tr[data-file="' + fileName + '"]');
-            $row
-              .find(".upload-to-drive")
-              .text("Upload to Drive")
-              .removeClass("uploaded")
-              .prop("disabled", false);
-            $row.fadeOut(400, function () {
-              $(this).remove();
-            });
-          });
-          if (response.data && response.data.drive_errors) {
+          // بازنشانی چک‌باکس‌ها
+          $(".select-audio").prop("checked", false);
+          // به‌روزرسانی تعداد انتخاب‌شده‌ها
+          updateSelectedCount();
+          // دریافت لیست به‌روزرسانی‌شده فایل‌ها
+          fetchUpdatedFiles();
+          if (response.data?.drive_errors) {
             showToast(response.data.drive_errors, "warning");
           }
         } else {
@@ -431,8 +617,12 @@ jQuery(document).ready(function ($) {
     audio.load();
   });
 
-  $(".select-audio").on("change", function () {
-    let count = $(".select-audio:checked").length;
-    $("#selected-count").text(`Selected: ${count}`);
+  // اتصال رویداد change به‌صورت delegated برای چک‌باکس‌ها
+  $(document).on("change", ".select-audio", function () {
+    updateSelectedCount();
   });
+
+  // اطمینان از به‌روزرسانی تعداد انتخاب‌شده‌ها و صفحه‌بندی هنگام لود صفحه
+  updateSelectedCount();
+  fetchUpdatedFiles();
 });
